@@ -1,12 +1,195 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ujian Online Informatika</title>
+  <!-- Library Mammoth.js untuk membaca file .docx langsung di browser -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+  <style>
+    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background: #f0f4f8; margin: 0; padding: 20px; color: #1e293b; }
+    .container { max-width: 800px; margin: 0 auto; background: #fff; padding: 28px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
+    h1 { text-align: center; color: #1e3a8a; font-size: 24px; margin-bottom: 4px; }
+    p.subtitle { text-align: center; color: #64748b; margin-top: 0; margin-bottom: 24px; font-size: 14px; }
+    .form-group { margin-bottom: 16px; }
+    label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 14px; }
+    input[type="text"], select { width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 15px; }
+    .upload-box { background: #f8fafc; border: 2px dashed #93c5fd; border-radius: 10px; padding: 14px; margin-bottom: 20px; text-align: center; }
+    .upload-box label { color: #1d4ed8; cursor: pointer; margin-bottom: 4px; }
+    .upload-info { font-size: 13px; color: #475569; margin: 6px 0 0; }
+    .btn { background: #2563eb; color: #fff; border: none; padding: 12px 20px; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+    .btn:hover { background: #1d4ed8; }
+    .btn:disabled { background: #94a3b8; cursor: not-allowed; }
+    .btn-secondary { background: #e2e8f0; color: #334155; }
+    .btn-secondary:hover { background: #cbd5e1; }
+    .btn-success { background: #16a34a; }
+    .btn-success:hover { background: #15803d; }
+    .hidden { display: none; }
+    .header-quiz { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 20px; }
+    .badge { background: #dbeafe; color: #1e40af; padding: 5px 12px; border-radius: 20px; font-weight: 600; font-size: 14px; }
+    .stimulus-box { background: #f8fafc; border-left: 4px solid #2563eb; padding: 14px 16px; border-radius: 6px; margin-bottom: 18px; font-size: 14.5px; line-height: 1.6; color: #1e293b; }
+    .stimulus-label { font-size: 11.5px; font-weight: 700; text-transform: uppercase; color: #2563eb; margin-bottom: 6px; display: block; letter-spacing: 0.5px; }
+    .question-text { font-size: 17px; font-weight: 600; line-height: 1.5; margin-bottom: 18px; }
+    .question-text img, .option-item img, .stimulus-box img { max-width: 100%; height: auto; max-height: 220px; display: block; margin: 8px 0; border-radius: 6px; }
+    .options { display: flex; flex-direction: column; gap: 10px; }
+    .option-item { display: flex; align-items: flex-start; padding: 12px 15px; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; transition: 0.15s; line-height: 1.45; }
+    .option-item:hover { border-color: #93c5fd; background: #f8fafc; }
+    .option-item.selected { border-color: #2563eb; background: #eff6ff; font-weight: 600; }
+    .option-item input { margin-right: 12px; margin-top: 4px; transform: scale(1.2); }
+    .nav-buttons { display: flex; justify-content: space-between; margin-top: 28px; padding-top: 16px; border-top: 1px solid #e2e8f0; }
+    .result-box { text-align: center; padding: 20px 0; }
+    .score-circle { width: 120px; height: 120px; border-radius: 50%; background: #2563eb; color: #fff; display: flex; flex-direction: column; justify-content: center; align-items: center; margin: 20px auto; font-size: 32px; font-weight: bold; }
+    .score-circle span { font-size: 12px; font-weight: normal; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <!-- HALAMAN 1: IDENTITAS & UPLOAD DOCX -->
+  <div id="start-screen">
+    <h1>Ujian Online Informatika</h1>
+    <p class="subtitle">SMP Negeri Satu Atap 3 Sukasada • 30 Soal Pilihan Ganda (Acak)</p>
+
+    <div class="upload-box">
+      <label for="docx-upload">📂 Ganti Soal? Unggah File Word (.docx) Di Sini (Opsional)</label>
+      <input type="file" id="docx-upload" accept=".docx" style="margin-top:6px; font-size:13px;" onchange="handleUploadDocx(event)" />
+      <p class="upload-info" id="bank-status">✅ Paket Soal Aktif: <strong>Informatika Kelas VIII (45 Soal PG)</strong></p>
+    </div>
+
+    <div class="form-group">
+      <label for="nama">Nama Lengkap Siswa</label>
+      <input type="text" id="nama" placeholder="Masukkan nama lengkap..." required />
+    </div>
+
+    <div class="form-group">
+      <label for="kelas">Kelas</label>
+      <select id="kelas" required>
+        <option value="">-- Pilih Kelas --</option>
+        <option value="VII A">VII A</option>
+        <option value="VII B">VII B</option>
+        <option value="VII C">VII C</option>
+        <option value="VIII A">VIII A</option>
+        <option value="VIII B">VIII B</option>
+        <option value="VIII C">VIII C</option>
+        <option value="IX A">IX A</option>
+        <option value="IX B">IX B</option>
+        <option value="IX C">IX C</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="mapel">Mata Pelajaran</label>
+      <input type="text" id="mapel" value="Informatika" readonly />
+    </div>
+
+    <button class="btn" style="width: 100%; margin-top: 10px;" onclick="mulaiUjian()">Mulai Ujian</button>
+  </div>
+
+  <!-- HALAMAN 2: PENGERJAAN SOAL SATU PER SATU -->
+  <div id="quiz-screen" class="hidden">
+    <div class="header-quiz">
+      <span id="info-siswa" style="font-weight: 600; color: #475569;"></span>
+      <span class="badge" id="progress-text">Soal 1 / 30</span>
+    </div>
+
+    <div id="question-container">
+      <div id="stimulus-container" class="stimulus-box hidden">
+        <span class="stimulus-label">Perhatikan Informasi / Stimulus Berikut:</span>
+        <div id="stimulus-text"></div>
+      </div>
+      <div class="question-text" id="question-text"></div>
+      <div class="options" id="options-container"></div>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="btn btn-secondary" id="btn-prev" onclick="prevSoal()">← Sebelumnya</button>
+      <button class="btn" id="btn-next" onclick="nextSoal()">Selanjutnya →</button>
+      <button class="btn btn-success hidden" id="btn-finish" onclick="selesaiUjian()">Selesai & Kirim Jawaban</button>
+    </div>
+  </div>
+
+  <!-- HALAMAN 3: HASIL UJIAN -->
+  <div id="result-screen" class="hidden result-box">
+    <h2>Ujian Selesai!</h2>
+    <p id="status-kirim" style="color: #2563eb; font-weight: 600;">Mengirim nilai ke Google Spreadsheet...</p>
+    <div class="score-circle">
+      <div id="final-score">0</div>
+      <span>Nilai Akhir</span>
+    </div>
+    <p id="detail-hasil"></p>
+  </div>
+</div>
+
 <script>
+  // =========================================================================
+  // 1. MASUKKAN URL WEB APP GOOGLE APPS SCRIPT ANDA DI BAWAH INI
+  // =========================================================================
   const SCRIPT_URL = "TEMPEL_URL_GOOGLE_APPS_SCRIPT_ANDA_DISINI";
 
+  // =========================================================================
+  // 2. BANK SOAL DEFAULT (45 SOAL INFORMATIKA KELAS VIII)
+  // =========================================================================
+  const s1 = "STIMULUS 1 - Transmisi Sinyal Lampu Digital<br>Sebuah perangkat IoT di laboratorium komputer mengirimkan sinyal status operasi dalam format kode angka digital desimal, biner, dan oktal. Angka 0 menunjukkan kondisi OFF, sedangkan angka positif menunjukkan modul mana yang aktif.<br>• Modul Utama ---> Kode Desimal: 25<br>• Modul Sensor ---> Kode Biner: 11010₂<br>• Modul Alarm ---> Kode Oktal: 37₈";
+  const s2 = "STIMULUS 2 - Memori Alokasi Microcontroller<br>Tabel alamat memori micro-controller mencatat data kapasitas penyimpanan untuk sensor cuaca sekolah:<br>• Sensor Suhu | Alamat Oktal: 52₈ | Nilai Desimal: 42<br>• Sensor Kelembapan | Alamat Biner: 101111₂ | Nilai Desimal: 47<br>• Sensor Curah Hujan | Alamat Oktal: 74₈ | Alamat Biner: 111100₂";
+  const s3 = "STIMULUS 3 - Tabel Ekstrakurikuler dan Beasiswa Siswa<br>Diberikan data nilai siswa SMP Merdeka pada Google Sheets:<br>• Tabel Utama (DataSiswa A2:D6):<br>1001 (Andika, E01, Rata-rata 88), 1002 (Bella, E03, Rata-rata 92), 1003 (Citra, E02, Rata-rata 79), 1004 (Dika, E01, Rata-rata 85), 1005 (Elsa, E04, Rata-rata 95)<br>• Tabel Referensi Ekstra (F2:G5):<br>E01 (Pramuka), E02 (Paskibra), E03 (Robotik), E04 (PMR)";
+  const s4 = "STIMULUS 4 - Data Penjualan Kantin Sekolah (Horisontal)<br>Pengelola kantin sekolah mencatat tarif diskon makanan berdasarkan total belanja menggunakan tabel referensi horisontal (A1:E2):<br>• Baris 1 (Minimal Belanja): 0 | 10.000 | 25.000 | 50.000 | 100.000<br>• Baris 2 (Diskon %): 0% | 5% | 10% | 15% | 20%<br>Transaksi: Rian (Rp18.000), Sari (Rp50.000), Tono (Rp8.000).";
+  const s5 = "STIMULUS 5 - Pencarian Posisi Data dengan INDEX & MATCH<br>Data inventaris komputer laboratorium (Range A1:C4):<br>• Baris 1: ID-01 | Monitor | 24<br>• Baris 2: ID-02 | Keyboard | 30<br>• Baris 3: ID-03 | Mouse | 30<br>• Baris 4: ID-04 | Printer | 4";
+  const s6 = "STIMULUS 6 - Laporan Kegiatan Proyek Lingkungan Sekolah<br>Tim OSIS SMP Merdeka membuat laporan kegiatan 'Penanaman Pohon Sekolah' di Google Docs. Laporan mencakup lokasi sekolah dari Google Maps serta Grafik Capaian yang diimpor dari Google Sheets.";
+  const s7 = "STIMULUS 7 - Pembuatan Laporan Berbasis Fitur Kolaborasi<br>Kelompok 3 kelas 8B mengerjakan laporan bersama dalam satu file Google Docs secara bersamaan dari rumah masing-masing.";
+  const s8 = "STIMULUS 8 - Visualisasi Mesin Pencetak Adonan Kue<br>Sebuah mesin pembuat kue otomatis di pabrik roti bekerja berdasarkan urutan pemrosesan:<br>Input Adonan Bulat (O) ---> Mesin A (Pipihkan -> Persegi Gepeng) ---> Mesin B (Cetak Lubang Tengah -> Donat) ---> Mesin C (Beri Toping Cokelat jika Berat > 50g) ---> Output Kue.";
+  const s9 = "STIMULUS 9 - Logika Ruang dan Antrean Mesin Kue<br>Aturan Operasi Ban Berjalan (Conveyor Belt):<br>1. Adonan dimasukkan satu per satu ke ban berjalan (Queue: FIFO).<br>2. Adonan Merah (M) -> Bintang; Hijau (H) -> Hati; Kuning (K) -> Lingkaran.";
+
   let bankSoalAktif = [
-    { id: 1, stimulus: "", question: "Silakan unggah file Word (.docx) soal di atas terlebih dahulu.", options: [{key:"A",text:"Opsi A"},{key:"B",text:"Opsi B"},{key:"C",text:"Opsi C"},{key:"D",text:"Opsi D"}], answerKey: "A" }
+    { id: 1, stimulus: s1, question: "Sistem bilangan biner berbasis 2 hanya menggunakan dua simbol angka untuk mewakili data digital. Simbol angka tersebut adalah...", options: [{key:"A",text:"0 dan 1"},{key:"B",text:"1 dan 2"},{key:"C",text:"0, 1, dan 2"},{key:"D",text:"1 hingga 8"}], answerKey: "A" },
+    { id: 2, stimulus: s1, question: "Berdasarkan stimulus di atas, Modul Utama mengirimkan kode angka desimal 25. Nilai desimal 25 jika dikonversi ke dalam sistem bilangan biner berbasis 2 adalah...", options: [{key:"A",text:"10101₂"},{key:"B",text:"11001₂"},{key:"C",text:"11011₂"},{key:"D",text:"11100₂"}], answerKey: "B" },
+    { id: 3, stimulus: s1, question: "Modul Sensor aktif dengan memberikan sinyal biner 11010₂. Berapakah nilai konversi bilangan biner tersebut jika diubah ke dalam bentuk bilangan desimal berbasis 10?", options: [{key:"A",text:"22"},{key:"B",text:"24"},{key:"C",text:"26"},{key:"D",text:"28"}], answerKey: "C" },
+    { id: 4, stimulus: s1, question: "Modul Alarm aktif dengan memberikan kode oktal 37₈. Teknisi ingin mencocokkan kode tersebut dengan modul sensor biner. Bentuk biner yang setara dengan kode oktal 37₈ adalah...", options: [{key:"A",text:"011111₂"},{key:"B",text:"011101₂"},{key:"C",text:"100111₂"},{key:"D",text:"101101₂"}], answerKey: "A" },
+    { id: 5, stimulus: s1, question: "Seorang teknisi memeriksa status ketiga modul tersebut dalam bentuk desimal: Modul Utama (25), Modul Sensor (11010₂), dan Modul Alarm (37₈). Urutan modul dari nilai kode terkecil hingga terbesar dalam desimal adalah...", options: [{key:"A",text:"Modul Utama (25), Modul Sensor (26), Modul Alarm (31)"},{key:"B",text:"Modul Utama (25), Modul Alarm (31), Modul Sensor (26)"},{key:"C",text:"Modul Sensor (26), Modul Utama (25), Modul Alarm (31)"},{key:"D",text:"Modul Alarm (31), Modul Sensor (26), Modul Utama (25)"}], answerKey: "A" },
+    { id: 6, stimulus: s2, question: "Sistem bilangan Oktal menggunakan basis 8. Angka-angka yang digunakan pada sistem bilangan ini adalah...", options: [{key:"A",text:"1 sampai 8"},{key:"B",text:"0 sampai 7"},{key:"C",text:"0 sampai 8"},{key:"D",text:"1 sampai 7"}], answerKey: "B" },
+    { id: 7, stimulus: s2, question: "Pada tabel di atas, sensor suhu memiliki alamat oktal 52₈. Hasil konversi angka oktal 52₈ ke bilangan biner adalah...", options: [{key:"A",text:"101010₂"},{key:"B",text:"101001₂"},{key:"C",text:"110010₂"},{key:"D",text:"100101₂"}], answerKey: "A" },
+    { id: 8, stimulus: s2, question: "Sensor kelembapan memiliki alamat biner 101111₂. Jika diubah menjadi kode bilangan oktal, nilai alamat tersebut adalah...", options: [{key:"A",text:"57₈"},{key:"B",text:"47₈"},{key:"C",text:"67₈"},{key:"D",text:"77₈"}], answerKey: "A" },
+    { id: 9, stimulus: s2, question: "Sensor curah hujan mencatat alamat oktal 74₈. Berapakah nilai desimal dari alamat memori tersebut?", options: [{key:"A",text:"56"},{key:"B",text:"60"},{key:"C",text:"62"},{key:"D",text:"64"}], answerKey: "B" },
+    { id: 10, stimulus: s2, question: "Apabila kapasitas alamat memori ditambah sebesar 15 (desimal) ke alamat Sensor Suhu (desimal 42), alamat baru tersebut jika dituliskan dalam biner dan oktal adalah...", options: [{key:"A",text:"Biner 111001₂ dan Oktal 71₈"},{key:"B",text:"Biner 111001₂ dan Oktal 67₈"},{key:"C",text:"Biner 110101₂ dan Oktal 71₈"},{key:"D",text:"Biner 111100₂ dan Oktal 74₈"}], answerKey: "A" },
+    { id: 11, stimulus: s3, question: "Fungsi pencarian data vertikal pada Google Sheets yang digunakan untuk mencari nilai berdasarkan kolom pertama tabel referensi adalah...", options: [{key:"A",text:"HLOOKUP"},{key:"B",text:"VLOOKUP"},{key:"C",text:"INDEX"},{key:"D",text:"LOOKUP"}], answerKey: "B" },
+    { id: 12, stimulus: s3, question: "Argumen parameter is_sorted / range_lookup bernilai FALSE pada rumus VLOOKUP berfungsi untuk...", options: [{key:"A",text:"Mencari nilai yang mendekati/mirip"},{key:"B",text:"Mencari nilai yang benar-benar cocok tepat (exact match)"},{key:"C",text:"Mengurutkan data secara otomatis dari A ke Z"},{key:"D",text:"Mengabaikan kesalahan input data"}], answerKey: "B" },
+    { id: 13, stimulus: s3, question: "Guru ingin menampilkan Nama Ekstrakurikuler untuk Bella (Baris 3) pada kolom E dengan membaca Tabel Referensi F2:G5. Rumus VLOOKUP yang tepat adalah...", options: [{key:"A",text:"=VLOOKUP(C3, F2:G5, 2, FALSE)"},{key:"B",text:"=VLOOKUP(C3, F2:G5, 1, FALSE)"},{key:"C",text:"=VLOOKUP(B3, F2:G5, 2, TRUE)"},{key:"D",text:"=VLOOKUP(D3, F2:G5, 2, FALSE)"}], answerKey: "A" },
+    { id: 14, stimulus: s3, question: "Jika guru mengetikkan rumus =VLOOKUP(\"E05\", F2:G5, 2, FALSE), hasil keluaran (output) yang akan muncul pada Google Sheets adalah...", options: [{key:"A",text:"Pramuka"},{key:"B",text:"PMR"},{key:"C",text:"#N/A"},{key:"D",text:"#VALUE!"}], answerKey: "C" },
+    { id: 15, stimulus: s3, question: "Seorang siswa mencoba mencari Nama Siswa pada baris ke-4 menggunakan kombinasi fungsi INDEX. Rumus yang ditulis adalah =INDEX(B2:B6, 3). Evaluasi terhadap rumus tersebut yang benar adalah...", options: [{key:"A",text:"Rumus salah, seharusnya menggunakan HLOOKUP"},{key:"B",text:"Rumus benar, menghasilkan nilai 'Citra' (elemen baris ke-3 dari range B2:B6)"},{key:"C",text:"Rumus salah, menghasilkan error #REF!"},{key:"D",text:"Rumus benar, menghasilkan nilai 'Bella'"}], answerKey: "B" },
+    { id: 16, stimulus: s3, question: "Untuk mengambil data nilai rata-rata siswa tertinggi menggunakan gabungan fungsi INDEX dan posisi baris, penyusunan logika alternatif selain MAX yang tepat adalah...", options: [{key:"A",text:"=INDEX(D2:D6, 2)"},{key:"B",text:"=INDEX(D2:D6, MATCH(95, D2:D6, 0))"},{key:"C",text:"=VLOOKUP(95, D2:D6, 1, TRUE)"},{key:"D",text:"=HLOOKUP(95, D2:D6, 1, FALSE)"}], answerKey: "B" },
+    { id: 17, stimulus: s4, question: "Fungsi dalam Google Sheets yang digunakan untuk pencarian data secara mendatar/horisontal berdasarkan baris pertama tabel adalah...", options: [{key:"A",text:"INDEX"},{key:"B",text:"VLOOKUP"},{key:"C",text:"HLOOKUP"},{key:"D",text:"MATCH"}], answerKey: "C" },
+    { id: 18, stimulus: s4, question: "Alasan parameter range_lookup pada rumus HLOOKUP untuk kasus tingkat belanja di atas diset menjadi TRUE (atau diabaikan) adalah...", options: [{key:"A",text:"Agar nilai pencarian harus tepat sama dengan angka dalam tabel"},{key:"B",text:"Karena rentang harga belanja bertingkat dan memerlukan pencarian nilai mendekati (approximate match)"},{key:"C",text:"Agar rumus memproses teks secara otomatis"},{key:"D",text:"Karena baris pertama tidak berurutan"}], answerKey: "B" },
+    { id: 19, stimulus: s4, question: "Rumus HLOOKUP untuk menghitung persentase diskon belanjaan Rian (Rp18.000,-) pada tabel A1:E2 adalah...", options: [{key:"A",text:"=HLOOKUP(18000, A1:E2, 2, TRUE)"},{key:"B",text:"=HLOOKUP(18000, A1:E2, 1, FALSE)"},{key:"C",text:"=VLOOKUP(18000, A1:E2, 2, TRUE)"},{key:"D",text:"=HLOOKUP(18000, A1:E2, 2, FALSE)"}], answerKey: "A" },
+    { id: 20, stimulus: s4, question: "Berdasarkan rumus =HLOOKUP(18000, A1:E2, 2, TRUE), besarnya persentase diskon yang diperoleh Rian adalah...", options: [{key:"A",text:"0%"},{key:"B",text:"5%"},{key:"C",text:"10%"},{key:"D",text:"15%"}], answerKey: "B" },
+    { id: 21, stimulus: s4, question: "Jika Sari berbelanja sebesar Rp50.000,- dan menggunakan rumus =HLOOKUP(50000, A1:E2, 2, FALSE), persentase diskon yang didapat adalah...", options: [{key:"A",text:"10%"},{key:"B",text:"15%"},{key:"C",text:"#N/A"},{key:"D",text:"20%"}], answerKey: "B" },
+    { id: 22, stimulus: s4, question: "Seorang kasir memasukkan rumus =HLOOKUP(8000, A1:E2, 2, FALSE) untuk Tono. Rumus tersebut menghasilkan #N/A. Perbaikan yang paling tepat agar rumus mengembalikan nilai 0% adalah...", options: [{key:"A",text:"Mengubah angka 8000 menjadi '8000'"},{key:"B",text:"Mengubah indeks baris dari 2 menjadi 1"},{key:"C",text:"Mengubah parameter FALSE menjadi TRUE"},{key:"D",text:"Mengganti fungsi HLOOKUP dengan INDEX"}], answerKey: "C" },
+    { id: 23, stimulus: s5, question: "Fungsi INDEX(array, row_num, [column_num]) pada Google Sheets mengembalikan...", options: [{key:"A",text:"Nomor baris dari suatu sel"},{key:"B",text:"Nilai dari sel tertentu pada baris dan kolom yang ditunjuk"},{key:"C",text:"Jumlah total sel dalam rentang"},{key:"D",text:"Hasil pencarian teks secara eksak"}], answerKey: "B" },
+    { id: 24, stimulus: s5, question: "Jika dimasukkan rumus =INDEX(A1:C4, 3, 2), maka hasil teks yang akan tampil di Google Sheets adalah...", options: [{key:"A",text:"Keyboard"},{key:"B",text:"Mouse"},{key:"C",text:"ID-03"},{key:"D",text:"30"}], answerKey: "B" },
+    { id: 25, stimulus: s5, question: "Rumus gabungan =INDEX(C1:C4, MATCH(\"Keyboard\", B1:B4, 0)) digunakan untuk mencari jumlah unit Keyboard. Hasil angka yang dikeluarkan oleh rumus tersebut adalah...", options: [{key:"A",text:"24"},{key:"B",text:"30"},{key:"C",text:"4"},{key:"D",text:"Error"}], answerKey: "B" },
+    { id: 26, stimulus: s6, question: "Fitur pada Google Docs yang digunakan untuk menyisipkan gambar tangkapan layar peta lokasi sekolah dari Google Maps adalah...", options: [{key:"A",text:"Insert > Table"},{key:"B",text:"Insert > Image > Upload / Search"},{key:"C",text:"Insert > Chart > From Sheets"},{key:"D",text:"Tools > Map Integration"}], answerKey: "B" },
+    { id: 27, stimulus: s6, question: "Saat mengopi grafik dari Google Sheets ke Google Docs, muncul opsi pop-up 'Link to spreadsheet'. Fungsi utama memilih opsi tersebut adalah...", options: [{key:"A",text:"Agar grafik di Google Docs berubah otomatis saat data di Google Sheets diperbarui"},{key:"B",text:"Agar ukuran grafik menjadi lebih kecil"},{key:"C",text:"Agar file Google Docs tidak bisa diedit orang lain"},{key:"D",text:"Untuk mengunci grafik agar tidak bergerak"}], answerKey: "A" },
+    { id: 28, stimulus: s6, question: "Siswa ingin melengkapi laporan dengan menyisipkan peta alamat sekolah. Urutan langkah yang benar untuk memasukkan gambar peta Google Maps ke Google Docs adalah...", options: [{key:"A",text:"Buka Google Maps -> Cari lokasi sekolah -> Buat screenshot / Simpan gambar -> Buka Google Docs -> Pilih menu Insert > Image"},{key:"B",text:"Buka Google Docs -> Ketik 'Google Maps' -> Klik tombol otomatis"},{key:"C",text:"Copy link Google Maps -> Paste di Google Sheets -> Import ke Docs"},{key:"D",text:"Download Google Docs -> Paste link Google Maps di folder komputer"}], answerKey: "A" },
+    { id: 29, stimulus: s6, question: "Dika memperbarui data angka penanaman pohon pada tabel Google Sheets. Namun, grafik di Google Docs miliknya tidak berubah secara otomatis. Penyebab paling logis dari kejadian ini adalah...", options: [{key:"A",text:"Dika lupa menyimpan file Google Docs"},{key:"B",text:"Saat menempelkan (paste) grafik, Dika memilih opsi 'Paste unlinked'"},{key:"C",text:"Google Sheets mengalami error rumus"},{key:"D",text:"Gambar Google Maps belum diperbarui"}], answerKey: "B" },
+    { id: 30, stimulus: s6, question: "Manakah pernyataan di bawah ini yang menunjukkan keuntungan utama integrasi data grafik antara Google Sheets dan Google Docs secara terkoneksi (linked)?", options: [{key:"A",text:"Menghemat ruang penyimpanan memori harddisk secara luring"},{key:"B",text:"Mencegah orang lain membaca data mentah pada tabel"},{key:"C",text:"Menjaga konsistensi data antara laporan naratif dan data visual tanpa perlu menyunting ulang secara manual"},{key:"D",text:"Mempercepat proses cetak dokumen di kertas"}], answerKey: "C" },
+    { id: 31, stimulus: s7, question: "Tombol pada Google Docs yang digunakan untuk membagikan akses edit dokumen kepada anggota kelompok lain adalah...", options: [{key:"A",text:"Download"},{key:"B",text:"Share (Bagikan)"},{key:"C",text:"Publish to Web"},{key:"D",text:"Version History"}], answerKey: "B" },
+    { id: 32, stimulus: s7, question: "Hak akses 'Viewer' (Penglihat) yang diberikan saat membagikan Google Docs berarti pengguna tersebut...", options: [{key:"A",text:"Dapat mengubah dan menghapus isi teks"},{key:"B",text:"Hanya dapat membaca dokumen tanpa bisa mengedit atau memberi komentar"},{key:"C",text:"Dapat menambah grafik baru dari Google Sheets"},{key:"D",text:"Berhak menghapus dokumen dari Drive"}], answerKey: "B" },
+    { id: 33, stimulus: s7, question: "Jika kamu ingin memberi masukan atau revisi pada kalimat tertentu tanpa mengubah teks asli temanmu di Google Docs, fitur yang tepat digunakan adalah...", options: [{key:"A",text:"Format Text"},{key:"B",text:"Add Comment (Tambah Komentar) / Suggesting Mode"},{key:"C",text:"Replace Text"},{key:"D",text:"Page Setup"}], answerKey: "B" },
+    { id: 34, stimulus: s7, question: "Sebuah grafik yang ditempel dengan metode 'Link to Spreadsheet' menampilkan tombol 'Update' di sudut kanan atas gambar saat dibuka di Google Docs. Tombol tersebut muncul karena...", options: [{key:"A",text:"File Google Docs belum diberi nama"},{key:"B",text:"Terjadi perubahan data pada file sumber Google Sheets"},{key:"C",text:"Koneksi internet terputus"},{key:"D",text:"Grafik di-crop oleh pengguna lain"}], answerKey: "B" },
+    { id: 35, stimulus: s7, question: "Rancangan tata letak (layout) laporan digital yang efisien dan rapi untuk menyajikan perbandingan data keuangan kantin meliputi komponen berikut, kecuali...", options: [{key:"A",text:"Judul laporan terstruktur"},{key:"B",text:"Peta Google Maps alamat kantin"},{key:"C",text:"Grafik visual hasil copy-link Google Sheets"},{key:"D",text:"Video animasi yang berputar terus-menerus di atas kertas cetak"}], answerKey: "D" },
+    { id: 36, stimulus: s8, question: "Empat pilar utama dalam Berpikir Komputasional (Computational Thinking) adalah...", options: [{key:"A",text:"Input, Process, Output, Storage"},{key:"B",text:"Dekomposisi, Pengenalan Pola, Abstraksi, Algoritma"},{key:"C",text:"Biner, Desimal, Oktal, Heksadesimal"},{key:"D",text:"Hardware, Software, Brainware, Network"}], answerKey: "B" },
+    { id: 37, stimulus: s8, question: "Proses membuang bagian adonan yang tidak rapi dan hanya fokus pada bentuk dasar donat merupakan penerapan pilar berpikir komputasional yaitu...", options: [{key:"A",text:"Dekomposisi"},{key:"B",text:"Algoritma"},{key:"C",text:"Abstraksi"},{key:"D",text:"Pengenalan Pola"}], answerKey: "C" },
+    { id: 38, stimulus: s8, question: "Jika adonan awal berbentuk Bulat (O) dimasukkan ke Mesin A lalu dilanjutkan ke Mesin B, perubahan bentuk adonan secara berurutan adalah...", options: [{key:"A",text:"Bulat -> Persegi Gepeng -> Donat Berlubang"},{key:"B",text:"Bulat -> Donat Berlubang -> Segitiga"},{key:"C",text:"Persegi -> Bulat -> Donat Berlubang"},{key:"D",text:"Bulat -> Bintang -> Tabung"}], answerKey: "A" },
+    { id: 39, stimulus: s8, question: "Diberikan adonan Y berbobot 40g diproses melalui Mesin A -> Mesin B -> Mesin C. Hasil akhir (output) dari adonan Y adalah...", options: [{key:"A",text:"Donat berlubang dengan toping cokelat"},{key:"B",text:"Donat berlubang tanpa toping cokelat"},{key:"C",text:"Adonan gepeng persegi dengan toping cokelat"},{key:"D",text:"Adonan bulat utuh"}], answerKey: "B" },
+    { id: 40, stimulus: s8, question: "Operator mesin mendapati bahwa kue hasil produksi Adonan Z tidak berlubang di tengahnya tetapi memiliki toping cokelat. Analisis kesalahan proses pada adonan Z adalah...", options: [{key:"A",text:"Mesin C rusak"},{key:"B",text:"Adonan Z melewati Mesin B (proses pencetakan lubang terlewati)"},{key:"C",text:"Adonan Z kurang beratnya"},{key:"D",text:"Mesin A gagal memipihkan adonan"}], answerKey: "B" },
+    { id: 41, stimulus: s9, question: "Prinsip antrean Queue dalam struktur data komputer menganut prinsip...", options: [{key:"A",text:"LIFO (Last In First Out)"},{key:"B",text:"FIFO (First In First Out)"},{key:"C",text:"FILO (First In Last Out)"},{key:"D",text:"Random Access"}], answerKey: "B" },
+    { id: 42, stimulus: s9, question: "Jika urutan adonan yang masuk ke ban berjalan adalah [M, H, K], maka adonan yang akan diproses dan keluar pertama kali oleh mesin adalah adonan berwarna...", options: [{key:"A",text:"Kuning"},{key:"B",text:"Hijau"},{key:"C",text:"Merah"},{key:"D",text:"Semuanya bersamaan"}], answerKey: "C" },
+    { id: 43, stimulus: s9, question: "Urutan masukan adonan adalah [M, H, K, M]. Bentuk visual urutan kue yang keluar dari mesin adalah...", options: [{key:"A",text:"Bintang, Hati, Lingkaran, Bintang"},{key:"B",text:"Hati, Bintang, Lingkaran, Bintang"},{key:"C",text:"Lingkaran, Bintang, Hati, Bintang"},{key:"D",text:"Bintang, Lingkaran, Hati, Bintang"}], answerKey: "A" },
+    { id: 44, stimulus: s9, question: "Terjadi kemacetan sehingga perilaku mesin berubah menjadi Stack (LIFO). Jika adonan masuk dengan urutan [Hijau, Kuning, Merah], urutan kue yang keluar adalah...", options: [{key:"A",text:"Hati, Lingkaran, Bintang"},{key:"B",text:"Bintang, Lingkaran, Hati"},{key:"C",text:"Lingkaran, Hati, Bintang"},{key:"D",text:"Bintang, Hati, Lingkaran"}], answerKey: "B" },
+    { id: 45, stimulus: s9, question: "Formula: 'Jika adonan Bintang (hasil Merah) bertemu adonan Hati (hasil Hijau), tumpuk menjadi Kue Lapis Dual-Rasa'. Dari masukan [M, H, K, M, H], berapa banyak Kue Lapis yang terbentuk?", options: [{key:"A",text:"1"},{key:"B",text:"2"},{key:"C",text:"3"},{key:"D",text:"0"}], answerKey: "B" }
   ];
 
   // =========================================================================
-  // PARSER BARU: BACA GAMBAR (BASE64) + SOAL + OPSI SECARA BERURUTAN
+  // 3. PARSER OTOMATIS .DOCX (MENGEKSTRAK GAMBAR BASE64 & PENOMORAN WORD)
   // =========================================================================
   function handleUploadDocx(event) {
     const file = event.target.files[0];
@@ -19,12 +202,331 @@
     const reader = new FileReader();
     reader.onload = function(e) {
       const arrayBuffer = e.target.result;
-      mammoth.convertToHtml({ arrayBuffer: arrayBuffer })
+
+      // Mengubah semua gambar di dalam Word menjadi Base64 agar tampil di HTML
+      const options = {
+        convertImage: mammoth.images.imgElement(function(image) {
+          return image.read("base64").then(function(imageBuffer) {
+            return {
+              src: "data:" + image.contentType + ";base64," + imageBuffer
+            };
+          });
+        })
+      };
+
+      mammoth.convertToHtml({ arrayBuffer: arrayBuffer }, options)
         .then(function(result) {
-          const parsed = parseDocxSmart(result.value);
+          const parsed = parseHtmlFromDocx(result.value);
           if (parsed.length > 0) {
             bankSoalAktif = parsed;
-            statusEl.innerHTML = `✅ Berhasil memuat <strong>${parsed.length} soal Pilihan Ganda</strong> dari <em>${file.name}</em> (Gambar & Stimulus ikut dimuat).`;
+            statusEl.innerHTML = `✅ Berhasil memuat <strong>${parsed.length} soal Pilihan Ganda</strong> beserta gambarnya dari <em>${file.name}</em>.`;
             statusEl.style.color = "#15803d";
           } else {
-            statusEl.innerHTML = "⚠ Gagal mendeteksi soal
+            statusEl.innerHTML = "⚠ Tidak ditemukan soal pilihan ganda di file tersebut. Menggunakan soal bawaan.";
+            statusEl.style.color = "#dc2626";
+          }
+        })
+        .catch(function(err) {
+          console.error(err);
+          statusEl.innerHTML = "⚠ Gagal membaca file .docx.";
+          statusEl.style.color = "#dc2626";
+        });
+    };
+    reader.readAsArrayBuffer(file);
+  }
+
+  function parseHtmlFromDocx(htmlString) {
+    const tempDiv = document.createElement("div");
+    tempDiv.innerHTML = htmlString;
+
+    let questions = [];
+    let currentStimulus = "";
+    let started = false;
+    let stopped = false;
+
+    const topNodes = Array.from(tempDiv.children);
+    const huruf = ["A", "B", "C", "D", "E"];
+
+    topNodes.forEach(node => {
+      if (stopped) return;
+      const plainText = node.innerText.trim();
+
+      if (!started) {
+        if (/BUTIR SOAL|Jawablah pertanyaan di bawah ini/i.test(plainText)) {
+          started = true;
+        }
+        return;
+      }
+
+      // Berhenti saat masuk bagian soal Isian / Esai
+      if (/^(II\.|B\.|III\.)?\s*Jawablah pertanyaan[- ]pertanyaan di bawah ini dengan jelas/i.test(plainText)) {
+        stopped = true;
+        return;
+      }
+
+      // Deteksi paragraf STIMULUS yang berdiri sendiri
+      if (/^STIMULUS\s*[:\-]?\s*\d*/i.test(plainText) && node.tagName !== "OL") {
+        currentStimulus = node.innerHTML;
+        return;
+      }
+
+      // Jika elemen adalah <ol> (Auto-Numbering List Microsoft Word)
+      if (node.tagName === "OL") {
+        const listItems = Array.from(node.children).filter(el => el.tagName === "LI");
+        listItems.forEach((li) => {
+          const nestedList = li.querySelector("ol, ul");
+          let opts = [];
+
+          if (nestedList) {
+            const optItems = Array.from(nestedList.querySelectorAll("li"));
+            optItems.forEach((optLi, optIdx) => {
+              if (optIdx < 5) {
+                opts.push({
+                  key: huruf[optIdx],
+                  text: optLi.innerHTML.trim()
+                });
+              }
+            });
+            nestedList.remove();
+          }
+
+          let qHtml = li.innerHTML.trim();
+          let stimMatch = qHtml.match(/^(STIMULUS\s*[:\-]?\s*\d*[\s\S]*?)(?=<br|<p|$)/i);
+          if (stimMatch && qHtml.length > 250) {
+            currentStimulus = stimMatch[1];
+          }
+
+          let ansKey = "A";
+          const keyMatch = li.innerText.match(/(?:KUNCI|JAWABAN)\s*[:\-]\s*([A-D])/i);
+          if (keyMatch) ansKey = keyMatch[1].toUpperCase();
+
+          if (opts.length >= 2) {
+            questions.push({
+              id: questions.length + 1,
+              stimulus: currentStimulus,
+              question: qHtml,
+              options: opts,
+              answerKey: ansKey
+            });
+          }
+        });
+      }
+    });
+
+    // Fallback jika dokumen Word menggunakan penomoran ketik manual ("1." dan "A.")
+    if (questions.length === 0) {
+      const lines = tempDiv.innerText.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+      let currentQ = null;
+      let inSection = false;
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        if (!inSection) {
+          if (/BUTIR SOAL|Jawablah pertanyaan/i.test(line)) inSection = true;
+          continue;
+        }
+        if (/^(II\.|B\.|III\.)?\s*Jawablah pertanyaan[- ]pertanyaan di bawah ini dengan jelas/i.test(line)) break;
+
+        if (/^STIMULUS\s*[:\-]?\s*\d*/i.test(line)) {
+          if (currentQ) { questions.push(currentQ); currentQ = null; }
+          currentStimulus = line;
+          while (i + 1 < lines.length && !/^\d+\.\s+/.test(lines[i + 1])) {
+            i++;
+            currentStimulus += "<br>" + lines[i];
+          }
+          continue;
+        }
+
+        const qMatch = line.match(/^(\d+)\.\s+(.*)/);
+        if (qMatch) {
+          if (currentQ) questions.push(currentQ);
+          currentQ = { id: parseInt(qMatch[1]), stimulus: currentStimulus, question: qMatch[2], options: [], answerKey: "A" };
+          continue;
+        }
+
+        const optMatch = line.match(/^([A-Da-d])\.\s+(.*)/);
+        if (optMatch && currentQ) {
+          currentQ.options.push({ key: optMatch[1].toUpperCase(), text: optMatch[2] });
+          continue;
+        }
+
+        const keyMatch = line.match(/^(?:KUNCI|JAWABAN)\s*[:\-]\s*([A-Da-d])/i);
+        if (keyMatch && currentQ) {
+          currentQ.answerKey = keyMatch[1].toUpperCase();
+          continue;
+        }
+
+        if (currentQ && currentQ.options.length === 0) {
+          currentQ.question += "<br>" + line;
+        }
+      }
+      if (currentQ) questions.push(currentQ);
+      questions = questions.filter(q => q.options.length >= 2);
+    }
+
+    return questions;
+  }
+
+  // =========================================================================
+  // 4. LOGIKA UJIAN (30 SOAL ACAK, MUNCUL SATU PER SATU)
+  // =========================================================================
+  const JUMLAH_SOAL_UJIAN = 30;
+  let soalTerpilih = [];
+  let jawabanSiswa = [];
+  let indexSekarang = 0;
+  let dataSiswa = {};
+
+  function acakArray(array) {
+    let arr = [...array];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  function mulaiUjian() {
+    const nama = document.getElementById("nama").value.trim();
+    const kelas = document.getElementById("kelas").value;
+    const mapel = document.getElementById("mapel").value;
+
+    if (!nama || !kelas) {
+      alert("Harap isi Nama Lengkap dan pilih Kelas terlebih dahulu!");
+      return;
+    }
+
+    dataSiswa = { nama, kelas, mapel };
+    const semuaSoalAcak = acakArray(bankSoalAktif);
+    soalTerpilih = semuaSoalAcak.slice(0, Math.min(JUMLAH_SOAL_UJIAN, bankSoalAktif.length));
+    jawabanSiswa = new Array(soalTerpilih.length).fill(null);
+    indexSekarang = 0;
+
+    document.getElementById("info-siswa").innerText = `${nama} (${kelas})`;
+    document.getElementById("start-screen").classList.add("hidden");
+    document.getElementById("quiz-screen").classList.remove("hidden");
+
+    tampilkanSoal();
+  }
+
+  function tampilkanSoal() {
+    const soal = soalTerpilih[indexSekarang];
+    const total = soalTerpilih.length;
+
+    document.getElementById("progress-text").innerText = `Soal ${indexSekarang + 1} / ${total}`;
+
+    const stimContainer = document.getElementById("stimulus-container");
+    const stimText = document.getElementById("stimulus-text");
+    if (soal.stimulus) {
+      stimText.innerHTML = soal.stimulus;
+      stimContainer.classList.remove("hidden");
+    } else {
+      stimContainer.classList.add("hidden");
+    }
+
+    document.getElementById("question-text").innerHTML = `${indexSekarang + 1}. ${soal.question}`;
+
+    const optionsContainer = document.getElementById("options-container");
+    optionsContainer.innerHTML = "";
+
+    soal.options.forEach((opt) => {
+      const isSelected = jawabanSiswa[indexSekarang] === opt.key;
+      const div = document.createElement("div");
+      div.className = `option-item ${isSelected ? "selected" : ""}`;
+      div.onclick = () => pilihJawaban(opt.key);
+
+      div.innerHTML = `
+        <input type="radio" name="opsi" ${isSelected ? "checked" : ""} />
+        <div><strong>${opt.key}.</strong> ${opt.text}</div>
+      `;
+      optionsContainer.appendChild(div);
+    });
+
+    document.getElementById("btn-prev").disabled = indexSekarang === 0;
+
+    if (indexSekarang === total - 1) {
+      document.getElementById("btn-next").classList.add("hidden");
+      document.getElementById("btn-finish").classList.remove("hidden");
+    } else {
+      document.getElementById("btn-next").classList.remove("hidden");
+      document.getElementById("btn-finish").classList.add("hidden");
+    }
+  }
+
+  function pilihJawaban(keyOpsi) {
+    jawabanSiswa[indexSekarang] = keyOpsi;
+    tampilkanSoal();
+  }
+
+  function nextSoal() {
+    if (indexSekarang < soalTerpilih.length - 1) {
+      indexSekarang++;
+      tampilkanSoal();
+    }
+  }
+
+  function prevSoal() {
+    if (indexSekarang > 0) {
+      indexSekarang--;
+      tampilkanSoal();
+    }
+  }
+
+  function selesaiUjian() {
+    const belumDijawab = jawabanSiswa.filter(j => j === null).length;
+    if (belumDijawab > 0) {
+      const yakin = confirm(`Masih ada ${belumDijawab} soal yang belum dijawab. Tetap kumpulkan ujian?`);
+      if (!yakin) return;
+    }
+
+    let jumlahBenar = 0;
+    let rincianArray = [];
+
+    soalTerpilih.forEach((soal, i) => {
+      const jwb = jawabanSiswa[i];
+      const benar = jwb === soal.answerKey;
+      if (benar) jumlahBenar++;
+      const kodeJwb = jwb !== null ? jwb : "-";
+      rincianArray.push(`${i + 1}[#${soal.id}]:${kodeJwb}(${benar ? "B" : "S"})`);
+    });
+
+    const totalSoal = soalTerpilih.length;
+    const nilaiSkala100 = Math.round((jumlahBenar / totalSoal) * 100);
+    const rincianJawaban = rincianArray.join(", ");
+
+    document.getElementById("quiz-screen").classList.add("hidden");
+    document.getElementById("result-screen").classList.remove("hidden");
+    document.getElementById("final-score").innerText = nilaiSkala100;
+    document.getElementById("detail-hasil").innerText = `Jumlah Benar: ${jumlahBenar} dari ${totalSoal} soal.`;
+
+    const payload = {
+      nama: dataSiswa.nama,
+      kelas: dataSiswa.kelas,
+      mapel: dataSiswa.mapel,
+      jumlahBenar: jumlahBenar,
+      nilai: nilaiSkala100,
+      rincian: rincianJawaban
+    };
+
+    if (SCRIPT_URL && SCRIPT_URL !== "TEMPEL_URL_GOOGLE_APPS_SCRIPT_ANDA_DISINI") {
+      fetch(SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      })
+      .then(() => {
+        document.getElementById("status-kirim").innerText = "✔ Nilai berhasil tersimpan ke Google Spreadsheet!";
+        document.getElementById("status-kirim").style.color = "#16a34a";
+      })
+      .catch(() => {
+        document.getElementById("status-kirim").innerText = "⚠ Gagal mengirim ke server. Silakan screenshot nilai ini.";
+        document.getElementById("status-kirim").style.color = "#dc2626";
+      });
+    } else {
+      document.getElementById("status-kirim").innerText = "Mode pratinjau (URL Apps Script belum diisi).";
+    }
+  }
+</script>
+
+</body>
+</html>

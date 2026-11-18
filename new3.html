@@ -1,0 +1,30 @@
+<script>
+  const SCRIPT_URL = "TEMPEL_URL_GOOGLE_APPS_SCRIPT_ANDA_DISINI";
+
+  let bankSoalAktif = [
+    { id: 1, stimulus: "", question: "Silakan unggah file Word (.docx) soal di atas terlebih dahulu.", options: [{key:"A",text:"Opsi A"},{key:"B",text:"Opsi B"},{key:"C",text:"Opsi C"},{key:"D",text:"Opsi D"}], answerKey: "A" }
+  ];
+
+  // =========================================================================
+  // PARSER BARU: BACA GAMBAR (BASE64) + SOAL + OPSI SECARA BERURUTAN
+  // =========================================================================
+  function handleUploadDocx(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const statusEl = document.getElementById("bank-status");
+    statusEl.innerHTML = "⏳ Sedang membaca soal & gambar dari file Word...";
+    statusEl.style.color = "#2563eb";
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const arrayBuffer = e.target.result;
+      mammoth.convertToHtml({ arrayBuffer: arrayBuffer })
+        .then(function(result) {
+          const parsed = parseDocxSmart(result.value);
+          if (parsed.length > 0) {
+            bankSoalAktif = parsed;
+            statusEl.innerHTML = `✅ Berhasil memuat <strong>${parsed.length} soal Pilihan Ganda</strong> dari <em>${file.name}</em> (Gambar & Stimulus ikut dimuat).`;
+            statusEl.style.color = "#15803d";
+          } else {
+            statusEl.innerHTML = "⚠ Gagal mendeteksi soal
